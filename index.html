@@ -163,6 +163,8 @@ body {
 .inf-label.disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 .inf-icon { font-size: 14px; }
 
+
+
 .verdict-select {
   font-family: Arial, sans-serif;
   font-size: 12px;
@@ -393,8 +395,8 @@ body {
    TOTAL COLUMN
 ═══════════════════════════════════════════ */
 .total-col {
-  width: 116px;
-  min-width: 116px;
+  width: 78px;
+  min-width: 78px;
   border: 1.5px solid #5a8a9a;
   border-left: none;
   border-radius: 0 4px 4px 0;
@@ -450,7 +452,7 @@ body {
   font-family: Arial, monospace;
   font-size: 13px;
   font-weight: 700;
-  width: 94px;
+  width: 58px;
   text-align: center;
   border: 1.5px solid #5ab0b0;
   border-radius: 3px;
@@ -578,8 +580,8 @@ input[type="number"] { -moz-appearance: textfield; }
   display: flex; align-items: center; justify-content: center;
   font-size: 15px; font-weight: 700; flex-shrink: 0;
 }
-.correct .v-icon { background: #e8192c; color: #fff; }
-.wrong   .v-icon { background: #7a1a1a; color: #fff; }
+.correct .v-icon { background: #1a7a1a; color: #fff; }
+.wrong   .v-icon { background: #e8192c; color: #fff; }
 
 .retro { font-size: 12px; margin-bottom: 12px; }
 .retro ul { margin: 5px 0 0 18px; }
@@ -652,7 +654,7 @@ input[type="number"] { -moz-appearance: textfield; }
 
   .stat-cards { grid-template-columns: 1fr; }
 
-  .total-col { width: 90px; min-width: 90px; }
+  .total-col { width: 72px; min-width: 72px; }
   .tot-row input[type="number"] { width: 74px; font-size: 12px; }
 
   .act-row { height: 44px; }
@@ -682,7 +684,7 @@ input[type="number"] { -moz-appearance: textfield; }
   .act-row { height: 40px; }
   .act-lbl { width: 60px; min-width: 60px; font-size: 8px; padding: 2px 3px; }
   .ruler-lbl { width: 60px; min-width: 60px; font-size: 8px; }
-  .total-col { width: 76px; min-width: 76px; }
+  .total-col { width: 64px; min-width: 64px; }
   .tot-row input[type="number"] { width: 62px; font-size: 11px; }
   .tot-row label { font-size: 7px; }
   .hn { font-size: 8px; }
@@ -718,6 +720,61 @@ input[type="number"] { -moz-appearance: textfield; }
   </div>
   <div class="reg-pill">Règlement sur les heures de conduite et de repos</div>
 </div>
+
+
+<!-- ── CONSIGNE ── -->
+    <!-- CONSIGNE (shown for both modes) -->
+    <div id="consigneSection" style="display:none; margin-bottom:16px;">
+      <div class="partial-header" id="consigneHeader"></div>
+      <div class="partial-body">
+        <div class="partial-info" id="consigneText"></div>
+        <!-- Partial-only answer fields — LOCAL -->
+        <div class="partial-fields" id="partialFields" style="display:none;">
+          <div class="pf-row">
+            <label>Q1 — Combien d'heures reste-t-il au poste de travail ?</label>
+            <input type="number" id="p-service-rest" min="0" max="16" step="0.25" placeholder="0.00">
+            <span class="pf-unit">h</span>
+          </div>
+          <div class="pf-row">
+            <label>Q2 — Combien d'heures de travail reste-t-il ?</label>
+            <input type="number" id="p-travail-rest" min="0" max="14" step="0.25" placeholder="0.00">
+            <span class="pf-unit">h</span>
+          </div>
+          <div class="pf-row">
+            <label>Q3 — Combien d'heures de conduite reste-t-il ?</label>
+            <input type="number" id="p-conduite-rest" min="0" max="13" step="0.25" placeholder="0.00">
+            <span class="pf-unit">h</span>
+          </div>
+          <div class="pf-row">
+            <label>Q4 — À quelle heure le chauffeur doit-il arrêter de travailler ?</label>
+            <input type="text" id="p-fin-poste" placeholder="ex: 14h30">
+          </div>
+        </div>
+
+        <!-- Partial-only answer fields — LONGUE DISTANCE -->
+        <div class="partial-fields" id="partialFieldsLongue" style="display:none;">
+          <div class="pf-row">
+            <label>Q1 — Combien d'heures reste-t-il au poste de travail ?</label>
+            <input type="number" id="pl-service-rest" min="0" max="16" step="0.25" placeholder="0.00">
+            <span class="pf-unit">h</span>
+          </div>
+          <div class="pf-row">
+            <label>Q2 — Combien d'heures de travail reste-t-il ?</label>
+            <input type="number" id="pl-travail-rest" min="0" max="14" step="0.25" placeholder="0.00">
+            <span class="pf-unit">h</span>
+          </div>
+          <div class="pf-row">
+            <label>Q3 — Combien d'heures de conduite reste-t-il ?</label>
+            <input type="number" id="pl-conduite-rest" min="0" max="13" step="0.25" placeholder="0.00">
+            <span class="pf-unit">h</span>
+          </div>
+          <div class="pf-row">
+            <label>Q4 — À quelle heure le chauffeur doit-il arrêter de travailler ?</label>
+            <input type="text" id="pl-fin-poste" placeholder="ex: 01h45">
+          </div>
+        </div>
+      </div>
+    </div>
 
 <div class="doc">
 
@@ -976,58 +1033,6 @@ input[type="number"] { -moz-appearance: textfield; }
   <!-- ── RESULT ── -->
   <div class="result-section">
 
-    <!-- CONSIGNE (shown for both modes) -->
-    <div id="consigneSection" style="display:none; margin-bottom:16px;">
-      <div class="partial-header" id="consigneHeader"></div>
-      <div class="partial-body">
-        <div class="partial-info" id="consigneText"></div>
-        <!-- Partial-only answer fields — LOCAL -->
-        <div class="partial-fields" id="partialFields" style="display:none;">
-          <div class="pf-row">
-            <label>Q1 — Combien d'heures reste-t-il au poste de travail ?</label>
-            <input type="number" id="p-service-rest" min="0" max="16" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q2 — Combien d'heures de travail reste-t-il ?</label>
-            <input type="number" id="p-travail-rest" min="0" max="14" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q3 — Combien d'heures de conduite reste-t-il ?</label>
-            <input type="number" id="p-conduite-rest" min="0" max="13" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q4 — À quelle heure le chauffeur doit-il arrêter de travailler ?</label>
-            <input type="text" id="p-fin-poste" placeholder="ex: 14h30">
-          </div>
-        </div>
-
-        <!-- Partial-only answer fields — LONGUE DISTANCE -->
-        <div class="partial-fields" id="partialFieldsLongue" style="display:none;">
-          <div class="pf-row">
-            <label>Q1 — Combien d'heures reste-t-il au poste de travail ?</label>
-            <input type="number" id="pl-service-rest" min="0" max="16" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q2 — Combien d'heures de travail reste-t-il ?</label>
-            <input type="number" id="pl-travail-rest" min="0" max="14" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q3 — Combien d'heures de conduite reste-t-il ?</label>
-            <input type="number" id="pl-conduite-rest" min="0" max="13" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q4 — À quelle heure le chauffeur doit-il arrêter de travailler ?</label>
-            <input type="text" id="pl-fin-poste" placeholder="ex: 01h45">
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div id="resultBox" class="result-box">
       <div class="verdict">
@@ -2170,6 +2175,7 @@ function chkRow(lbl, user, real) {
 ═══════════════════════════════════════════════════ */
 buildRuler();
 ALL_ROWS.forEach(r => buildCellTicks(r));
+
 window.addEventListener('resize', renderAll);
 
 const today = new Date();
