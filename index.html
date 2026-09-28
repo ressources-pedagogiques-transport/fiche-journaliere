@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-<title>Fiche journalière – Simulation DEP 5291</title>
+<title>Simulation – Fiche journalière du conducteur</title>
 <style>
 /* ═══════════════════════════════════════════
    BASE
@@ -716,7 +716,7 @@ input[type="number"] { -moz-appearance: textfield; }
 <div class="peda-banner">
   <div>
     <h1>Simulation – Fiche journalière de conducteur</h1>
-    <div class="sub">DEP 5291 · Transport routier de marchandises · Québec</div>
+    <div class="sub">Règlement sur les heures de conduite et de repos</div>
   </div>
   <div class="reg-pill">Règlement sur les heures de conduite et de repos</div>
 </div>
@@ -1052,7 +1052,8 @@ input[type="number"] { -moz-appearance: textfield; }
 </div><!-- /doc -->
   <!-- FOOTER -->
   <div style="text-align:center; padding: 14px 18px; font-size: 11px; color: #fff; background: #1a3a5c; margin-top: 8px; border-radius: 0 0 6px 6px;">
-    Simulation pédagogique · Fiche journalière · DEP 5291 · Transport routier de marchandises &nbsp;|&nbsp; <strong style="color:#fff;">Propriété de Guillaume Nicole-Roussel</strong>
+    Simulation pédagogique — Fiche journalière du conducteur &nbsp;|&nbsp; <strong style="color:#fff;">Propriété de Guillaume Nicole-Roussel</strong><br>
+    <span style="font-weight:400;opacity:0.85;">Source : Société de l'assurance automobile du Québec. (2023). <em>Heures de conduite et de repos des conducteurs de véhicules lourds</em> (C-4646). SAAQ. <a href="https://saaq.gouv.qc.ca/fileadmin/documents/publications/heures-conduite-repos-vehicules-lourds.pdf" style="color:#aad4d4;">https://saaq.gouv.qc.ca/fileadmin/documents/publications/heures-conduite-repos-vehicules-lourds.pdf</a></span>
   </div>
 </div><!-- /page-wrap -->
 
@@ -1935,15 +1936,20 @@ function showResultPartiel(t, isLongue, box) {
   if (travailTotal >= 14) retro += '<br>⚠ Limite de travail de 14 h atteinte.';
 
   function qRow(num, label, userStr, realStr, ok) {
-    const cls  = ok ? 'ok' : 'err';
-    const icon = ok ? '✓' : '✗';
-    return '<div class="chk-row">' +
-      '<span class="chk-lbl">Q' + num + ' — ' + label + '</span>' +
-      '<span class="chk-user ' + cls + '">' + (userStr || '—') + '</span>' +
-      '<span class="chk-sep">→</span>' +
-      '<span class="chk-real ' + cls + '">' + realStr + '</span>' +
-      '<span style="font-size:13px;margin-left:4px;" class="' + cls + '">' + icon + '</span>' +
-      '</div>';
+    if (ok) {
+      return '<div class="chk-row">' +
+        '<span class="chk-lbl">Q' + num + ' — ' + label + '</span>' +
+        '<span style="font-size:13px;margin-left:4px;" class="ok">✓</span>' +
+        '</div>';
+    } else {
+      return '<div class="chk-row">' +
+        '<span class="chk-lbl">Q' + num + ' — ' + label + '</span>' +
+        '<span class="chk-user err">' + (userStr || '—') + '</span>' +
+        '<span class="chk-sep">→</span>' +
+        '<span class="chk-real err">' + realStr + '</span>' +
+        '<span style="font-size:13px;margin-left:4px;" class="err">✗</span>' +
+        '</div>';
+    }
   }
 
   const rows =
@@ -2107,15 +2113,20 @@ function showResultPartielLongue(t, box) {
     La contrainte la plus restrictive l'emporte → arrêt obligatoire à <strong>${fmtHorloge(finPosteH)}</strong>.`;
 
   function qRow(num, label, userStr, realStr, ok) {
-    const cls  = ok ? 'ok' : 'err';
-    const icon = ok ? '✓' : '✗';
-    return `<div class="chk-row">
-      <span class="chk-lbl">Q${num} — ${label}</span>
-      <span class="chk-user ${cls}">${userStr || '—'}</span>
-      <span class="chk-sep">→</span>
-      <span class="chk-real ${cls}">${realStr}</span>
-      <span style="font-size:13px;margin-left:4px;" class="${cls}">${icon}</span>
-    </div>`;
+    if (ok) {
+      return `<div class="chk-row">
+        <span class="chk-lbl">Q${num} — ${label}</span>
+        <span style="font-size:13px;margin-left:4px;" class="ok">✓</span>
+      </div>`;
+    } else {
+      return `<div class="chk-row">
+        <span class="chk-lbl">Q${num} — ${label}</span>
+        <span class="chk-user err">${userStr || '—'}</span>
+        <span class="chk-sep">→</span>
+        <span class="chk-real err">${realStr}</span>
+        <span style="font-size:13px;margin-left:4px;" class="err">✗</span>
+      </div>`;
+    }
   }
 
   const rows =
@@ -2159,15 +2170,24 @@ function buildRegNote(isLongue, debutQ, dureePoste) {
 function chkRow(lbl, user, real) {
   const blank = isNaN(user);
   const pass  = !blank && Math.abs(user - real) <= 0.3;
-  const cls   = pass ? 'ok' : 'err';
-  const icon  = blank ? '⚠' : (pass ? '✓' : '✗');
-  return `<div class="chk-row">
-    <span class="chk-lbl">${lbl}</span>
-    <span class="chk-user ${cls}">${blank ? '—' : fmtH(user)}</span>
-    <span class="chk-sep">→</span>
-    <span class="chk-real ${cls}">${fmtH(real)}</span>
-    <span style="font-size:13px;margin-left:4px;" class="${cls}">${icon}</span>
-  </div>`;
+  if (pass) {
+    // Bonne réponse : seulement un crochet vert, pas de valeurs
+    return `<div class="chk-row">
+      <span class="chk-lbl">${lbl}</span>
+      <span style="font-size:13px;margin-left:4px;" class="ok">✓</span>
+    </div>`;
+  } else {
+    // Mauvaise réponse ou vide : afficher réponse élève → bonne réponse
+    const cls  = 'err';
+    const icon = blank ? '⚠' : '✗';
+    return `<div class="chk-row">
+      <span class="chk-lbl">${lbl}</span>
+      <span class="chk-user ${cls}">${blank ? '—' : fmtH(user)}</span>
+      <span class="chk-sep">→</span>
+      <span class="chk-real ${cls}">${fmtH(real)}</span>
+      <span style="font-size:13px;margin-left:4px;" class="${cls}">${icon}</span>
+    </div>`;
+  }
 }
 
 /* ═══════════════════════════════════════════════════
