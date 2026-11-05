@@ -613,10 +613,20 @@ input[type="number"] { -moz-appearance: textfield; }
 
 /* ── PARTIAL FICHE SECTION ── */
 .partial-header {
-  background: #2a8a8a; color: #fff;
-  padding: 9px 16px; border-radius: 4px 4px 0 0;
-  font-size: 12px; font-weight: 700;
+  background: #111; color: #fff;
+  padding: 11px 18px; border-radius: 4px;
+  font-size: 13px; font-weight: 700;
+  margin-bottom: 8px; letter-spacing: 0.02em;
 }
+/* ── Bandeaux étapes (style image jointe) ── */
+.step-banner {
+  background: #111; color: #fff;
+  padding: 11px 18px; border-radius: 4px;
+  font-size: 13px; font-weight: 700;
+  margin-bottom: 8px; letter-spacing: 0.02em;
+}
+.step-banner .step-hl { color: #2be0b0; }
+.step-section { margin-bottom: 14px; }
 .partial-body {
   background: #e8f4f4; border: 1.5px solid #5ab0b0;
   border-top: none; border-radius: 0 0 4px 4px; padding: 14px 18px;
@@ -722,59 +732,13 @@ input[type="number"] { -moz-appearance: textfield; }
 </div>
 
 
-<!-- ── CONSIGNE ── -->
-    <!-- CONSIGNE (shown for both modes) -->
-    <div id="consigneSection" style="display:none; margin-bottom:16px;">
-      <div class="partial-header" id="consigneHeader"></div>
-      <div class="partial-body">
-        <div class="partial-info" id="consigneText"></div>
-        <!-- Partial-only answer fields — LOCAL -->
-        <div class="partial-fields" id="partialFields" style="display:none;">
-          <div class="pf-row">
-            <label>Q1 — Combien d'heures reste-t-il au poste de travail ?</label>
-            <input type="number" id="p-service-rest" min="0" max="16" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q2 — Combien d'heures de travail reste-t-il ?</label>
-            <input type="number" id="p-travail-rest" min="0" max="14" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q3 — Combien d'heures de conduite reste-t-il ?</label>
-            <input type="number" id="p-conduite-rest" min="0" max="13" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q4 — À quelle heure le chauffeur doit-il arrêter de travailler ?</label>
-            <input type="text" id="p-fin-poste" placeholder="ex: 14h30">
-          </div>
-        </div>
-
-        <!-- Partial-only answer fields — LONGUE DISTANCE -->
-        <div class="partial-fields" id="partialFieldsLongue" style="display:none;">
-          <div class="pf-row">
-            <label>Q1 — Combien d'heures reste-t-il au poste de travail ?</label>
-            <input type="number" id="pl-service-rest" min="0" max="16" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q2 — Combien d'heures de travail reste-t-il ?</label>
-            <input type="number" id="pl-travail-rest" min="0" max="14" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q3 — Combien d'heures de conduite reste-t-il ?</label>
-            <input type="number" id="pl-conduite-rest" min="0" max="13" step="0.25" placeholder="0.00">
-            <span class="pf-unit">h</span>
-          </div>
-          <div class="pf-row">
-            <label>Q4 — À quelle heure le chauffeur doit-il arrêter de travailler ?</label>
-            <input type="text" id="pl-fin-poste" placeholder="ex: 01h45">
-          </div>
-        </div>
-      </div>
-    </div>
+<!-- ── CONSIGNE ÉTAPE 1 ── -->
+<div id="consigneSection" style="display:none; margin-bottom:16px;">
+  <div class="partial-header" id="consigneHeader"></div>
+  <div class="partial-body">
+    <div class="partial-info" id="consigneText"></div>
+  </div>
+</div>
 
 <div class="doc">
 
@@ -1031,6 +995,57 @@ input[type="number"] { -moz-appearance: textfield; }
   </div><!-- /fiche2Section -->
 
   <!-- ── RESULT ── -->
+  <!-- ── ÉTAPE 2 (fiche partielle seulement) ── -->
+  <div id="etape2Section" style="display:none; margin-top:16px;">
+    <div class="partial-header" style="background:#111; color:#fff; padding:11px 18px; border-radius:4px 4px 0 0; font-size:13px; font-weight:700; letter-spacing:0.02em;">📋 Étape 2 — Comptabilisez les heures, puis répondez aux 4 questions ci-dessous. Déterminez si la fiche est <span style="color:#2be0b0;">conforme</span> ou <span style="color:#ff6b6b;">non-conforme</span> au règlement HCR en utilisant la liste déroulante ci-dessus. Cliquez ensuite sur <span style="color:#2be0b0;">Résultats ▶</span>.</div>
+    <div class="partial-body">
+      <!-- Questions LOCAL -->
+      <div class="partial-fields" id="partialFields" style="display:none;">
+        <div class="pf-row">
+          <label>Q1 — Combien d'heures reste-t-il au poste de travail ?</label>
+          <input type="number" id="p-service-rest" min="0" max="16" step="0.25" placeholder="0.00">
+          <span class="pf-unit">h</span>
+        </div>
+        <div class="pf-row">
+          <label>Q2 — Combien d'heures de travail reste-t-il ?</label>
+          <input type="number" id="p-travail-rest" min="0" max="14" step="0.25" placeholder="0.00">
+          <span class="pf-unit">h</span>
+        </div>
+        <div class="pf-row">
+          <label>Q3 — Combien d'heures de conduite reste-t-il ?</label>
+          <input type="number" id="p-conduite-rest" min="0" max="13" step="0.25" placeholder="0.00">
+          <span class="pf-unit">h</span>
+        </div>
+        <div class="pf-row">
+          <label>Q4 — À quelle heure le chauffeur doit-il arrêter de travailler ?</label>
+          <input type="text" id="p-fin-poste" placeholder="ex: 14h30">
+        </div>
+      </div>
+      <!-- Questions LONGUE DISTANCE -->
+      <div class="partial-fields" id="partialFieldsLongue" style="display:none;">
+        <div class="pf-row">
+          <label>Q1 — Combien d'heures reste-t-il au poste de travail ?</label>
+          <input type="number" id="pl-service-rest" min="0" max="16" step="0.25" placeholder="0.00">
+          <span class="pf-unit">h</span>
+        </div>
+        <div class="pf-row">
+          <label>Q2 — Combien d'heures de travail reste-t-il ?</label>
+          <input type="number" id="pl-travail-rest" min="0" max="14" step="0.25" placeholder="0.00">
+          <span class="pf-unit">h</span>
+        </div>
+        <div class="pf-row">
+          <label>Q3 — Combien d'heures de conduite reste-t-il ?</label>
+          <input type="number" id="pl-conduite-rest" min="0" max="13" step="0.25" placeholder="0.00">
+          <span class="pf-unit">h</span>
+        </div>
+        <div class="pf-row">
+          <label>Q4 — À quelle heure le chauffeur doit-il arrêter de travailler ?</label>
+          <input type="text" id="pl-fin-poste" placeholder="ex: 01h45">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="result-section">
 
 
@@ -1322,26 +1337,62 @@ function buildScheduleLocal(partial) {
   const maxQ = partial ? Math.round(Q * (0.65 + Math.random() * 0.15)) : Q;
 
   function add(type, len) {
-    len = Math.min(len, maxQ - pos);
+    len = Math.min(len, maxQ - pos - 1); // garde 1q pour le travail final
     if (len <= 0) return;
-    segs.push({ type, start: pos, len }); pos += len;
+    // Fusionner si même type que le dernier segment
+    if (segs.length > 0 && segs[segs.length-1].type === type) {
+      segs[segs.length-1].len += len;
+    } else {
+      segs.push({ type, start: pos, len });
+    }
+    pos += len;
   }
 
-  // Repos initial : min 3h, max 8h → poste démarre au plus tard à 08h00
+  // ── Repos initial : min 3h, max 8h ──
   add('repos', rq(3, 8));
-  add('conduite', rq(1.5, 4));
-  if (Math.random() > 0.4) add('travail', rq(0.5, 1.5));
-  if (Math.random() > 0.4) add('repos', rq(0.5, 1.5));
-  add('conduite', rq(2, 5));
-  if (Math.random() > 0.3) add('travail', rq(0.5, 2));
-  if (Math.random() > 0.5 && pos < (partial ? maxQ - 4 : 78)) {
-    add('conduite', rq(1, 4));
-    if (Math.random() > 0.5) add('travail', rq(0.25, 1));
+
+  // ── 30 min de travail obligatoire au début du poste ──
+  segs.push({ type: 'travail', start: pos, len: 2 }); pos += 2;
+
+  // ── Corps : séquence garantie conduite + variations ──
+  // Bloc 1 : conduite (obligatoire)
+  add('conduite', rq(1.5, 3));
+
+  // Variation aléatoire A : repos court ou travail
+  const varA = Math.random();
+  if (varA < 0.35)      add('repos',   rq(0.5, 1));
+  else if (varA < 0.65) add('travail', rq(0.5, 1.5));
+
+  // Bloc 2 : conduite (obligatoire)
+  add('conduite', rq(1.5, 3.5));
+
+  // Variation aléatoire B
+  const varB = Math.random();
+  if (varB < 0.4)       add('repos',   rq(0.5, 1.5));
+  else if (varB < 0.7)  add('travail', rq(0.5, 1));
+
+  // Bloc 3 : conduite ou travail selon RNG
+  if (Math.random() > 0.4) add('conduite', rq(1, 3));
+  else                      add('travail',  rq(0.5, 2));
+
+  // Variation finale optionnelle
+  if (Math.random() > 0.5) {
+    const varC = Math.random();
+    if (varC < 0.5)     add('repos',   rq(0.25, 1));
+    else                add('travail', rq(0.25, 1));
   }
 
-  // For fiche complète: always fill remaining quarters with repos to reach exactly 24 h
+  // ── 15 min de travail obligatoire avant la fin ──
+  const last = segs[segs.length - 1];
+  if (last && last.type === 'travail') {
+    last.len += 1; pos += 1;
+  } else {
+    segs.push({ type: 'travail', start: pos, len: 1 }); pos += 1;
+  }
+
+  // Fiche complète : remplir le reste avec repos
   if (!partial && pos < Q) {
-    add('repos', Q - pos);
+    segs.push({ type: 'repos', start: pos, len: Q - pos });
   }
 
   return segs;
@@ -1382,7 +1433,11 @@ function buildScheduleLongue(partial) {
   }
   breakList = breakList.sort(() => Math.random() - 0.5);
 
+  // ── 30 min de travail obligatoire juste après la couchette 1 ──
+  add('travail', 2);
+
   // ── Interleave drive blocks and breaks ──
+  // On réserve 1q (15 min) pour le travail final avant couchette 2
   const numDriveBlocks = breakList.length + 1;
   for (let i = 0; i < numDriveBlocks; i++) {
     add('conduite', rq(1, 3));
@@ -1391,23 +1446,33 @@ function buildScheduleLongue(partial) {
   }
 
   if (!partial) {
-    // ── Fiche complète: fill remaining with conduite/travail, then exact couchette2 ──
-    while (pos < Q - c2q) {
-      const rem = Q - pos - c2q;
+    // ── Fiche complète: fill remaining with conduite/travail, 15 min travail, then couchette2 ──
+    while (pos < Q - c2q - 1) {
+      const rem = Q - pos - c2q - 1; // -1 pour réserver le travail final
       if (rem <= 0) break;
       const fillC = Math.min(rem, rq(1, Math.min(3, Math.ceil(rem / 4) + 1)));
       add('conduite', fillC);
-      const rem2 = Q - pos - c2q;
+      const rem2 = Q - pos - c2q - 1;
       if (rem2 > 0 && Math.random() > 0.4)
         add('travail', Math.min(rem2, rq(1, Math.min(2, Math.ceil(rem2 / 4) + 1))));
+    }
+    // ── 15 min de travail obligatoire avant la couchette 2 ──
+    if (segs.length > 0 && segs[segs.length - 1].type === 'travail') {
+      segs[segs.length - 1].len += 1; pos += 1;
+    } else {
+      add('travail', 1);
     }
     // Couchette 2 fills exactly to Q
     add('couchette', Q - pos);
   } else {
-    // ── Fiche partielle: couchette2 is COMPLETE (exact hours), fiche simply ends there ──
-    // No activity after couchette2 — the work shift is not yet finished
+    // ── Fiche partielle ──
+    // 15 min de travail avant couchette 2
+    if (segs.length > 0 && segs[segs.length - 1].type === 'travail') {
+      segs[segs.length - 1].len += 1; pos += 1;
+    } else {
+      add('travail', 1);
+    }
     add('couchette', c2q);
-    // Fiche ends here — nothing follows
   }
 
   return segs;
@@ -1607,41 +1672,38 @@ function updatePartialSection(isPartial) {
   const sec          = document.getElementById('consigneSection');
   const header       = document.getElementById('consigneHeader');
   const text         = document.getElementById('consigneText');
+  const etape2       = document.getElementById('etape2Section');
   const fields       = document.getElementById('partialFields');
   const fieldsLongue = document.getElementById('partialFieldsLongue');
   const fiche2       = document.getElementById('fiche2Section');
   const isLongue     = document.getElementById('driverType').value === 'longue';
 
+  // Reset
   sec.style.display    = 'block';
+  etape2.style.display = 'none';
   fiche2.style.display = 'none';
   fields.style.display = 'none';
   fieldsLongue.style.display = 'none';
+  text.style.display   = 'none';
+  // Masquer aussi le partial-body (encadré blanc) quand inutile
+  const pbody = sec.querySelector('.partial-body');
+  if (pbody) pbody.style.display = 'none';
 
   if (!isPartial) {
-    header.textContent = '📋 Consigne — Fiche complète';
-    text.innerHTML =
-      'Comptabilisez le nombre d\'heures de chaque activité dans la colonne <strong>Total (h)</strong> ' +
-      'à droite de la fiche journalière, puis déterminez si la fiche est ' +
-      '<strong>conforme</strong> ou <strong>non-conforme</strong> au règlement HCR ' +
-      'en utilisant la liste déroulante ci-dessus. Cliquez ensuite sur <strong>Résultats</strong>.';
+    // ── Fiche complète : consigne complète dans l'en-tête, pas de boîte texte ──
+    header.innerHTML = '🔗 Étape 1 — Comptabilisez le nombre d\'heures de chaque activité dans la colonne <strong>Total (h)</strong> à droite de la fiche journalière, puis déterminez si la fiche est <span style="color:#2be0b0;">conforme</span> ou <span style="color:#ff6b6b;">non-conforme</span> au règlement HCR en utilisant la liste déroulante ci-dessus. Cliquez ensuite sur <span style="color:#2be0b0;">Résultats ▶</span>.';
+    if (pbody) pbody.style.display = 'none';
   } else if (!isLongue) {
-    header.textContent = '📋 Consigne — Fiche partielle (chauffeur local)';
-    text.innerHTML =
-      'Comptabilisez le nombre d\'heures de chaque activité dans la colonne <strong>Total (h)</strong>. ' +
-      'Ensuite, calculez : le <strong>temps de service restant</strong> au poste de 16 h ' +
-      '(horloge continue depuis la première activité), ' +
-      'les <strong>heures de conduite restantes</strong> (max 13 h) ' +
-      'et les <strong>heures de travail total restantes</strong> (max 14 h). ' +
-      'Cliquez sur <strong>Résultats</strong> pour valider.';
+    // ── Fiche partielle locale : consigne dans l'en-tête, pas de boîte texte ──
+    header.innerHTML = '🔗 Étape 1 — Comptabilisez le nombre d\'heures de chaque activité dans la colonne <strong>Total (h)</strong> à droite de la fiche journalière.';
+    if (pbody) pbody.style.display = 'none';
+    etape2.style.display = 'block';
     fields.style.display = 'flex';
   } else {
-    // Longue distance partielle — fiche 2 + 4 questions
-    header.textContent = '📋 Consigne — Fiche partielle (chauffeur longue distance)';
-    text.innerHTML =
-      'Comptabilisez les heures de chaque activité dans la colonne <strong>Total (h)</strong> de la Fiche 1 (Jour 1). ' +
-      'Comptabilisez ensuite les heures, puis répondez aux <strong>4 questions</strong> ci-dessous : ' +
-      'heures restantes au poste, au travail et à la conduite, ' +
-      'et heure limite d\'arrêt du chauffeur au Jour 2.';
+    // ── Fiche partielle longue distance ──
+    header.innerHTML = '🔗 Étape 1 — Comptabilisez le nombre d\'heures de chaque activité dans la colonne <strong>Total (h)</strong> de la Fiche 1 (Jour 1) et de la Fiche 2 (Jour 2).';
+    if (pbody) pbody.style.display = 'none';
+    etape2.style.display = 'block';
     fieldsLongue.style.display = 'flex';
     fiche2.style.display = 'block';
 
