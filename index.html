@@ -794,9 +794,9 @@ input[type="number"] { -moz-appearance: textfield; }
   <!-- ── TOOLBAR ── -->
   <div class="toolbar">
     <button class="btn btn-gen" onclick="generateFiche()">⟳ Générer</button>
-    <label class="inf-label" id="infractionLabel" title="Disponible en fiche complète seulement">
-      <input type="checkbox" id="btnInfraction" onchange="toggleInfraction()">
-      <span class="inf-icon">⚠</span> Mode infraction
+    <label class="inf-label" id="infractionLabel" title="Fiche complète seulement : génère au hasard une fiche conforme ou non conforme">
+      <input type="checkbox" id="btnInfraction" onchange="toggleAleatoire()">
+      <span class="inf-icon">🎲</span> Mode aléatoire
     </label>
     <select class="verdict-select" id="ficheType" onchange="onFicheTypeChange()">
       <option value="complete">Fiche complète</option>
@@ -806,7 +806,7 @@ input[type="number"] { -moz-appearance: textfield; }
       <option value="local">Chauffeur local</option>
       <option value="longue">Chauffeur longue distance</option>
     </select>
-    <div id="conformeWrap" style="flex:1;display:flex;justify-content:center;">
+    <div id="conformeWrap" style="flex:0;display:none;justify-content:center;">
       <select class="verdict-select" id="conformeSelect">
         <option value="">— Verdict de conformité —</option>
         <option value="conforme">✓ &nbsp;Conforme au règlement HCR</option>
@@ -997,7 +997,7 @@ input[type="number"] { -moz-appearance: textfield; }
   <!-- ── RESULT ── -->
   <!-- ── ÉTAPE 2 (fiche partielle seulement) ── -->
   <div id="etape2Section" style="display:none; margin-top:16px;">
-    <div class="partial-header" style="background:#111; color:#fff; padding:11px 18px; border-radius:4px 4px 0 0; font-size:13px; font-weight:700; letter-spacing:0.02em;">📋 Étape 2 — Comptabilisez les heures, puis répondez aux 4 questions ci-dessous. Déterminez si la fiche est <span style="color:#2be0b0;">conforme</span> ou <span style="color:#ff6b6b;">non-conforme</span> au règlement HCR en utilisant la liste déroulante ci-dessus. Cliquez ensuite sur <span style="color:#2be0b0;">Résultats ▶</span>.</div>
+    <div class="partial-header" style="background:#111; color:#fff; padding:11px 18px; border-radius:4px 4px 0 0; font-size:13px; font-weight:700; letter-spacing:0.02em;">📋 Étape 2 — Comptabilisez les heures, puis répondez aux 4 questions ci-dessous. Cliquez ensuite sur <span style="color:#2be0b0;">Résultats ▶</span>.</div>
     <div class="partial-body">
       <!-- Questions LOCAL -->
       <div class="partial-fields" id="partialFields" style="display:none;">
@@ -1083,21 +1083,24 @@ const ALL_ROWS = ['repos','couchette','conduite','travail']; // display order
 const state = {};
 ALL_ROWS.forEach(r => { state[r] = new Array(Q).fill(false); });
 
-/* ── Toggle conformity dropdown based on fiche type ── */
-function onFicheTypeChange() {
+/* ── Mode aléatoire + liste déroulante de conformité ──
+   Le verdict de conformité n'est demandé que si "Mode aléatoire" est coché
+   (fiche complète seulement). Sinon la fiche est toujours conforme. */
+function syncVerdictUI() {
   const isPartial = document.getElementById('ficheType').value === 'partielle';
-  const wrap = document.getElementById('conformeWrap');
-  wrap.style.display = isPartial ? 'none' : 'flex';
-  wrap.style.flex = isPartial ? '0' : '1';
-  if (isPartial) document.getElementById('conformeSelect').value = '';
-
-  // Le mode infraction n'est disponible qu'en fiche complète
   const chk = document.getElementById('btnInfraction');
   const lbl = document.getElementById('infractionLabel');
+  if (isPartial) { aleatoireMode = false; chk.checked = false; }
   chk.disabled = isPartial;
   lbl.classList.toggle('disabled', isPartial);
-  if (isPartial) { infractionMode = false; chk.checked = false; }
+
+  const showVerdict = !isPartial && aleatoireMode;
+  const wrap = document.getElementById('conformeWrap');
+  wrap.style.display = showVerdict ? 'flex' : 'none';
+  wrap.style.flex    = showVerdict ? '1' : '0';
+  document.getElementById('conformeSelect').value = '';
 }
+function onFicheTypeChange() { syncVerdictUI(); }
 
 /* ═══════════════════════════════════════════════════
    BUILD RULER (top only, hour numbers right of tick)
@@ -1331,70 +1334,42 @@ function rq(a, b) {
   return qa + Math.floor(Math.random() * (qb - qa + 1));
 }
 
-// LOCAL driver: repos + conduite + travail, optionally non-compliant
+// LOCAL driver : le poste (1er travail → dernière activité) dure toujours 10 h à 13 h.
+// Structure : repos initial → 30 min de travail → corps aléatoire (conduite / travail / repos)
+// → 15 min de travail final. Fiche complète : repos jusqu'à 24 h. Fiche partielle : arrêt après les 15 min.
 function buildScheduleLocal(partial) {
   const segs = []; let pos = 0;
-  const maxQ = partial ? Math.round(Q * (0.65 + Math.random() * 0.15)) : Q;
+  const reposInit = rq(3, 8);     // repos initial : 3 h à 8 h
+  const spanQ     = rq(10, 13);   // durée du poste : 10 h à 13 h (40 à 52 quarts)
+  const bodyQ     = spanQ - 3;    // corps = poste − 30 min initiales − 15 min finales
 
-  function add(type, len) {
-    len = Math.min(len, maxQ - pos - 1); // garde 1q pour le travail final
+  function push(type, len) {
     if (len <= 0) return;
-    // Fusionner si même type que le dernier segment
-    if (segs.length > 0 && segs[segs.length-1].type === type) {
-      segs[segs.length-1].len += len;
-    } else {
-      segs.push({ type, start: pos, len });
-    }
+    const last = segs[segs.length - 1];
+    if (last && last.type === type) last.len += len;
+    else segs.push({ type, start: pos, len });
     pos += len;
   }
 
-  // ── Repos initial : min 3h, max 8h ──
-  add('repos', rq(3, 8));
+  push('repos', reposInit);
+  push('travail', 2);             // 30 min de travail obligatoire au début
 
-  // ── 30 min de travail obligatoire au début du poste ──
-  segs.push({ type: 'travail', start: pos, len: 2 }); pos += 2;
-
-  // ── Corps : séquence garantie conduite + variations ──
-  // Bloc 1 : conduite (obligatoire)
-  add('conduite', rq(1.5, 3));
-
-  // Variation aléatoire A : repos court ou travail
-  const varA = Math.random();
-  if (varA < 0.35)      add('repos',   rq(0.5, 1));
-  else if (varA < 0.65) add('travail', rq(0.5, 1.5));
-
-  // Bloc 2 : conduite (obligatoire)
-  add('conduite', rq(1.5, 3.5));
-
-  // Variation aléatoire B
-  const varB = Math.random();
-  if (varB < 0.4)       add('repos',   rq(0.5, 1.5));
-  else if (varB < 0.7)  add('travail', rq(0.5, 1));
-
-  // Bloc 3 : conduite ou travail selon RNG
-  if (Math.random() > 0.4) add('conduite', rq(1, 3));
-  else                      add('travail',  rq(0.5, 2));
-
-  // Variation finale optionnelle
-  if (Math.random() > 0.5) {
-    const varC = Math.random();
-    if (varC < 0.5)     add('repos',   rq(0.25, 1));
-    else                add('travail', rq(0.25, 1));
+  // ── Corps aléatoire : conduite, puis variation (repos ou travail), puis conduite… ──
+  let used = 0;
+  function pushBody(type, len) {
+    len = Math.min(len, bodyQ - used);
+    if (len <= 0) return;
+    push(type, len); used += len;
+  }
+  pushBody('conduite', rq(2, 4));
+  while (used < bodyQ) {
+    pushBody(Math.random() < 0.45 ? 'repos' : 'travail', rq(0.5, 1.5));
+    pushBody('conduite', rq(1.5, 3.5));
   }
 
-  // ── 15 min de travail obligatoire avant la fin ──
-  const last = segs[segs.length - 1];
-  if (last && last.type === 'travail') {
-    last.len += 1; pos += 1;
-  } else {
-    segs.push({ type: 'travail', start: pos, len: 1 }); pos += 1;
-  }
+  push('travail', 1);             // 15 min de travail obligatoire avant la fin
 
-  // Fiche complète : remplir le reste avec repos
-  if (!partial && pos < Q) {
-    segs.push({ type: 'repos', start: pos, len: Q - pos });
-  }
-
+  if (!partial && pos < Q) push('repos', Q - pos);
   return segs;
 }
 
@@ -1481,10 +1456,11 @@ function buildScheduleLongue(partial) {
 /* ═══════════════════════════════════════════════════
    MODE INFRACTION
 ═══════════════════════════════════════════════════ */
-let infractionMode = false;
+let aleatoireMode = false;
 
-function toggleInfraction() {
-  infractionMode = document.getElementById('btnInfraction').checked;
+function toggleAleatoire() {
+  aleatoireMode = document.getElementById('btnInfraction').checked;
+  syncVerdictUI();
   generateFiche();
 }
 
@@ -1601,14 +1577,14 @@ function _forceExtend(segs, type, needQ) {
   // Passe 2 : si pas assez trouvé, cherche n'importe quel repos et insère
   // un nouveau segment conduite juste avant lui
   if (remaining > 0) {
-    for (let i = 0; i < segs.length && remaining > 0; i++) {
+    // On part de la fin : le repos final est entamé en premier, le début du poste reste intact
+    for (let i = segs.length - 1; i >= 0 && remaining > 0; i--) {
       if (segs[i].type !== 'repos') continue;
       const bite = Math.min(remaining, segs[i].len - 2);
       if (bite <= 0) continue;
       segs[i].len -= bite;
       segs.splice(i, 0, { type, start: 0, len: bite });
       remaining   -= bite;
-      i++; // saute le segment qu'on vient d'insérer
     }
   }
 
@@ -1656,8 +1632,8 @@ function generateFiche() {
     partialCutoffQ = Q;
   }
 
-  // Mode infraction : injecter une infraction aléatoire sur la fiche complète
-  if (infractionMode && !isPartial) {
+  // Mode aléatoire : 1 fiche sur 2 reçoit une infraction (fiche complète seulement)
+  if (aleatoireMode && !isPartial && Math.random() < 0.5) {
     applyInfraction(isLongue);
   }
 
@@ -1691,7 +1667,11 @@ function updatePartialSection(isPartial) {
 
   if (!isPartial) {
     // ── Fiche complète : consigne complète dans l'en-tête, pas de boîte texte ──
-    header.innerHTML = '🔗 Étape 1 — Comptabilisez le nombre d\'heures de chaque activité dans la colonne <strong>Total (h)</strong> à droite de la fiche journalière, puis déterminez si la fiche est <span style="color:#2be0b0;">conforme</span> ou <span style="color:#ff6b6b;">non-conforme</span> au règlement HCR en utilisant la liste déroulante ci-dessus. Cliquez ensuite sur <span style="color:#2be0b0;">Résultats ▶</span>.';
+    if (aleatoireMode) {
+      header.innerHTML = '🔗 Étape 1 — Comptabilisez le nombre d\'heures de chaque activité dans la colonne <strong>Total (h)</strong> à droite de la fiche journalière, puis déterminez si la fiche est <span style="color:#2be0b0;">conforme</span> ou <span style="color:#ff6b6b;">non-conforme</span> au règlement HCR en utilisant la liste déroulante ci-dessus. Cliquez ensuite sur <span style="color:#2be0b0;">Résultats ▶</span>.';
+    } else {
+      header.innerHTML = '🔗 Étape 1 — Comptabilisez le nombre d\'heures de chaque activité dans la colonne <strong>Total (h)</strong> à droite de la fiche journalière. Cliquez ensuite sur <span style="color:#2be0b0;">Résultats ▶</span>.';
+    }
     if (pbody) pbody.style.display = 'none';
   } else if (!isLongue) {
     // ── Fiche partielle locale : consigne dans l'en-tête, pas de boîte texte ──
@@ -1858,8 +1838,9 @@ function calcPosteTiming() {
 
 /* ── Fiche complète ── */
 function showResultComplet(t, isLongue, box) {
+  const askVerdict = aleatoireMode;   // verdict demandé seulement en mode aléatoire
   const choix = document.getElementById('conformeSelect').value;
-  if (!choix) { alert('Veuillez sélectionner votre verdict de conformité.'); return; }
+  if (askVerdict && !choix) { alert('Veuillez sélectionner votre verdict de conformité.'); return; }
 
   const { debutQ, dureePosteQ, dureeHCRQ } = calcPosteTiming();
   // Longue distance: poste = heures actives SANS couchette (elles mettent le compteur sur pause)
@@ -1873,7 +1854,13 @@ function showResultComplet(t, isLongue, box) {
   } else {
     conforme = t.conduite <= 13 && travailTotal <= 14 && dureePoste <= 16 && t.resTot >= 10;
   }
-  const ok = (choix === 'conforme') === conforme;
+  const uR  = parseFloat(document.getElementById('in-repos').value);
+  const uCo = parseFloat(document.getElementById('in-couchette').value);
+  const uC  = parseFloat(document.getElementById('in-conduite').value);
+  const uT  = parseFloat(document.getElementById('in-travail').value);
+  const totalsOk = [[uR, t.repos], [uCo, t.couchette], [uC, t.conduite], [uT, t.travail]]
+    .every(([u, r]) => !isNaN(u) && Math.abs(u - r) <= 0.3);
+  const ok = askVerdict ? ((choix === 'conforme') === conforme) : totalsOk;
 
   const viols = [];
   if (t.conduite > 13)   viols.push('Conduite de <strong>' + fmtH(t.conduite) + '</strong> dépasse 13 h');
@@ -1882,7 +1869,11 @@ function showResultComplet(t, isLongue, box) {
   if (!isLongue && t.resTot < 10)   viols.push('Repos de <strong>' + fmtH(t.resTot) + '</strong> inférieur à 10 h');
   if (isLongue && t.couchette < 10) viols.push('Couchette de <strong>' + fmtH(t.couchette) + '</strong> inférieure à 10 h');
 
-  const retro = ok
+  const retro = !askVerdict
+    ? (totalsOk
+        ? '<strong>Bravo !</strong> Tous vos totaux sont corrects.'
+        : '<strong>Certains totaux sont incorrects.</strong> Vérifiez le détail ci-dessous.')
+    : ok
     ? (conforme
         ? '<strong>Bonne réponse !</strong> Cette fiche est <strong>conforme</strong> au règlement HCR. Toutes les limites sont respectées.'
         : '<strong>Bonne réponse !</strong> Cette fiche est <strong>non-conforme</strong>. Infractions :<ul>' + viols.map(v=>'<li>'+v+'</li>').join('') + '</ul>')
@@ -1890,17 +1881,13 @@ function showResultComplet(t, isLongue, box) {
         ? '<strong>Réponse incorrecte.</strong> La fiche est en réalité <strong>conforme</strong>. Révisez vos calculs.'
         : '<strong>Réponse incorrecte.</strong> La fiche est <strong>non-conforme</strong>. Infractions à détecter :<ul>' + viols.map(v=>'<li>'+v+'</li>').join('') + '</ul>');
 
-  const uR  = parseFloat(document.getElementById('in-repos').value);
-  const uCo = parseFloat(document.getElementById('in-couchette').value);
-  const uC  = parseFloat(document.getElementById('in-conduite').value);
-  const uT  = parseFloat(document.getElementById('in-travail').value);
-
   box.className = 'result-box ' + (ok ? 'correct' : 'wrong');
   box.style.display = 'block';
   document.getElementById('vIcon').textContent = ok ? '✓' : '✗';
-  document.getElementById('vText').textContent = ok
-    ? 'Bonne réponse — votre verdict est correct'
-    : 'Réponse incorrecte — votre verdict est erroné';
+  document.getElementById('vText').textContent = !askVerdict
+    ? (ok ? 'Tous vos totaux sont corrects' : 'Certains totaux sont à revoir')
+    : (ok ? 'Bonne réponse — votre verdict est correct'
+          : 'Réponse incorrecte — votre verdict est erroné');
   document.getElementById('retro').innerHTML = retro;
   document.getElementById('chkTitle').textContent = 'Vérification de vos totaux';
 
@@ -1941,10 +1928,12 @@ function showResultPartiel(t, isLongue, box) {
   const realTravailRest  = Math.max(0, Math.round((14 - travailTotal)  * 4) / 4);
   const realConduiteRest = Math.max(0, Math.round((13 - t.conduite)    * 4) / 4);
 
-  // Q4 — heure limite = début du poste + minimum des 3 contraintes
-  const limPosteH    = debutH + realServiceRest;
-  const limTravailH  = debutH + realTravailRest;
-  const limConduiteH = debutH + realConduiteRest;
+  // Q4 — heure limite = fin de la dernière activité + restant de chaque contrainte
+  // (la plus petite limite l'emporte). Limite du poste = début du poste + 16 h.
+  const finH         = finQ * 0.25;
+  const limPosteH    = finH + realServiceRest;
+  const limTravailH  = finH + realTravailRest;
+  const limConduiteH = finH + realConduiteRest;
   const finPosteH    = Math.min(limPosteH, limTravailH, limConduiteH);
 
   function fmtHorloge(h) {
@@ -1986,11 +1975,11 @@ function showResultPartiel(t, isLongue, box) {
     : '<strong>Certains calculs sont incorrects.</strong> Vérifiez le détail ci-dessous.';
 
   retro += '<br><br>📌 <strong>Démarche :</strong><br>' +
-    'Poste débuté à <strong>' + fmtQ(debutQ) + '</strong>, durée écoulée = <strong>' + fmtH(dureePoste) + '</strong>.<br><br>' +
-    'On calcule les 3 limites depuis la fin du poste partiel :<br>' +
-    '&nbsp;&nbsp;① Poste de 16 h : ' + fmtHorloge(debutH) + ' + ' + fmtH(realServiceRest) + ' restantes = <strong>' + fmtHorloge(limPosteH) + '</strong><br>' +
-    '&nbsp;&nbsp;② Travail max 14 h : ' + fmtHorloge(debutH) + ' + ' + fmtH(realTravailRest) + ' restantes = <strong>' + fmtHorloge(limTravailH) + '</strong><br>' +
-    '&nbsp;&nbsp;③ Conduite max 13 h : ' + fmtHorloge(debutH) + ' + ' + fmtH(realConduiteRest) + ' restantes = <strong>' + fmtHorloge(limConduiteH) + '</strong><br>' +
+    'Poste débuté à <strong>' + fmtQ(debutQ) + '</strong>, dernière activité à <strong>' + fmtQ(finQ) + '</strong>, durée écoulée = <strong>' + fmtH(dureePoste) + '</strong>.<br><br>' +
+    'On calcule les 3 limites :<br>' +
+    '&nbsp;&nbsp;① Poste de 16 h : ' + fmtHorloge(debutH) + ' + 16 h = <strong>' + fmtHorloge(limPosteH) + '</strong><br>' +
+    '&nbsp;&nbsp;② Travail max 14 h : ' + fmtHorloge(finH) + ' + ' + fmtH(realTravailRest) + ' restantes = <strong>' + fmtHorloge(limTravailH) + '</strong><br>' +
+    '&nbsp;&nbsp;③ Conduite max 13 h : ' + fmtHorloge(finH) + ' + ' + fmtH(realConduiteRest) + ' restantes = <strong>' + fmtHorloge(limConduiteH) + '</strong><br>' +
     'La contrainte la plus restrictive l\'emporte → arrêt obligatoire à <strong>' + fmtHorloge(finPosteH) + '</strong>.';
 
   if (t.conduite >= 13) retro += '<br>⚠ Limite de conduite de 13 h atteinte.';
